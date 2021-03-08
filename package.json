@@ -14,6 +14,8 @@
     "express-jwt": "^5.3.3",
     "jsonwebtoken": "^8.5.1",
     "nodemon": "^2.0.7",
-    "pg": "^8.5.1"
+    "pg": "^8.5.1",
+    "sequelize": "^6.5.0",
+    "sequelize-cli": "^6.2.0"
   }
 }
