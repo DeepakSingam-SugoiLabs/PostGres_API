@@ -13,6 +13,8 @@ const pool = new Pool({
 
 exports.getUsers = async(req,res) =>{
     const response = await pool.query("SELECT * FROM users")
+    console.log("response is ",response)
+
     res.status(200).json(response.rows)
 }
 
@@ -38,10 +40,10 @@ exports.createUser = async(req,res) =>{
 }
 
 exports.newUser = async(req,res) =>{
-    const {username,email,password,id} = req.body;
+    const {username,email,password,id,role,address} = req.body;
     console.log("name",username,"email",email)
     try{
-        const response =await pool.query('INSERT INTO users(username,email,password) VALUES ($1,$2,$3)',[username,email,password])
+        const response =await pool.query('INSERT INTO users(username,email,password,role,address) VALUES ($1,$2,$3,$4,$5)',[username,email,password,role,address])
         console.log("response is",response)
          res.json({
              message:"Sign-up successful",
@@ -74,18 +76,21 @@ exports.verifyUser= async(req,res)=>{
     const email   = req.body.email;
     const  password  = req.body.password;
     try{
-
+        console.log("email",email)
+        console.log("password",password)
         let user= await pool.query('SELECT * FROM users WHERE email = $1',[email]);
         let user_id= await pool.query('SELECT user_id FROM users WHERE email = $1',[email]);
-        let pass_check= await pool.query('SELECT password  FROM users WHERE email = $1',[email]);
-
+        let pass_check= await pool.query('SELECT password FROM users WHERE email = $1',[email]);
+        console.log("pass_check",pass_check)
+        console.log("user",user)
+        console.log("user_id",user_id)
         if(pass_check.rows[0].password == password)
         {
         if (!user)
                 return res.status(400).json({message: "User Not Exist"});
         let role = await pool.query('SELECT role FROM users WHERE email = $1',[email])
 
-        console.log("role is",role)
+        console.log("role is",role.rows,email)
         if(role.rows[0].role == 'admin')
         {   console.log("inside role")
             var token = jwt.sign({ id: user_id }, `${process.env.JWT_SECRET}`, {
