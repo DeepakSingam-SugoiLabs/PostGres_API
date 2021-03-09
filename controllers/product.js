@@ -1,10 +1,10 @@
 const product = require('../models/product')
 
-
+//add products
 exports.addProduct = async(req,res) => {
     product_name=req.body.product_name;
-seller_details=req.body.seller_details;
-specifications=req.body.specifications;
+    seller_details=req.body.seller_details;
+    specifications=req.body.specifications;
     try{
         const response= await product.create({
             product_name:req.body.product_name,

@@ -10,14 +10,13 @@ const pool = new Pool({
     port:'5432'
 })
 
-
+//all users
 exports.getUsers = async(req,res) =>{
     const response = await pool.query("SELECT * FROM users")
-    console.log("response is ",response)
-
     res.status(200).json(response.rows)
 }
 
+//add user (admin only)
 exports.createUser = async(req,res) =>{
     const {username,email,password,id} = req.body;
     console.log("name",username,"email",email)
@@ -38,7 +37,7 @@ exports.createUser = async(req,res) =>{
         });
         }
 }
-
+//sign up
 exports.newUser = async(req,res) =>{
     const {username,email,password,id,role,address} = req.body;
     console.log("name",username,"email",email)
@@ -59,13 +58,13 @@ exports.newUser = async(req,res) =>{
         });
         }
 }
-
+//get user using ID
 exports.getUserById= async(req,res)=>{
     const id = req.params.id;
     const response = await pool.query('SELECT * FROM users WHERE user_id = $1',[id]);
     res.json(response.rows)
 }
-
+//delete user
 exports.deleteUser= async(req,res)=>{
     const id = req.params.id;
     const response = await pool.query('DELETE FROM users WHERE user_id = $1',[id]);
@@ -76,34 +75,29 @@ exports.verifyUser= async(req,res)=>{
     const email   = req.body.email;
     const  password  = req.body.password;
     try{
-        console.log("email",email)
-        console.log("password",password)
         let user= await pool.query('SELECT * FROM users WHERE email = $1',[email]);
         let user_id= await pool.query('SELECT user_id FROM users WHERE email = $1',[email]);
         let pass_check= await pool.query('SELECT password FROM users WHERE email = $1',[email]);
-        console.log("pass_check",pass_check)
-        console.log("user",user)
-        console.log("user_id",user_id)
         if(pass_check.rows[0].password == password)
         {
-        if (!user)
+        if (!user)                                                              //check user if exists
                 return res.status(400).json({message: "User Not Exist"});
-        let role = await pool.query('SELECT role FROM users WHERE email = $1',[email])
+        let role = await pool.query('SELECT role FROM users WHERE email = $1',[email])//check role of user
 
-        console.log("role is",role.rows,email)
-        if(role.rows[0].role == 'admin')
-        {   console.log("inside role")
+            if(role.rows[0].role == 'admin')
+            {
             var token = jwt.sign({ id: user_id }, `${process.env.JWT_SECRET}`, {
                 expiresIn: 86400 // expires in 24 hours
-           });
+            });
            res.json({
             message:"user signed in ,use token",
             body:{
                 user:{email,token}
             }
            })
-        }
-        else{
+            }
+            else
+            {
             var token = jwt.sign({ id: user_id }, `${process.env.JWT_SECRET2}`, {
                 expiresIn: 86400 // expires in 24 hours
            });
@@ -124,14 +118,7 @@ exports.verifyUser= async(req,res)=>{
         }
 }
 
-
-exports.deleteUser= async(req,res)=>{
-    const id = req.params.id;
-    const response = await pool.query('DELETE FROM users WHERE user_id = $1',[id]);
-    res.json(`User ${id} deleted successful`)
-}
-
-
+//update user using ID
 exports.updateUser= async(req,res)=>{
     const id = req.params.id;
     const {name,email,address} = req.body;
@@ -148,6 +135,6 @@ exports.updateUser= async(req,res)=>{
     res.json(`User ${id} updated successful`)
 }
 
-exports.requireSignin = expressJwt({                               //validate JWT
+exports.requireSignin = expressJwt({                               //validate JWT based on role
     secret: process.env.JWT_SECRET
 });

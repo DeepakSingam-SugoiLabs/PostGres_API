@@ -1,7 +1,6 @@
 const subcategories = require('../models/subcategories')
 const categories = require('../models/categories')
-// var model = require('../node_modules/.bin/models/category');
-
+//add category
 exports.postCategory = async(req,res) => {
 let category_namee = req.body.category_name
 try{
@@ -15,7 +14,6 @@ try{
         category_name:req.body.category_name,
         status:1
     })
-    // const response =await db.query('INSERT INTO categories(category_name,status) VALUES ($1,$2)',[category_namee,1])
 
       res.json({
              message:"Category added",
@@ -31,6 +29,7 @@ try{
         });
         }
 }
+//add sub_category
 exports.postsubCategory = async(req,res) => {   
 let sub_category_name = req.body.sub_category_name
 let sub_category_data = req.body.sub_category_data
