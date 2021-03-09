@@ -1,19 +1,23 @@
 const {Pool}= require('pg');
 const jwt = require('jsonwebtoken');
 const expressJwt = require('express-jwt');
+const users = require('../models/users')
 
-const pool = new Pool({
-    host:'localhost',
-    user:'postgres',
-    password:'Deep@k0506',
-    database:'DataBase',
-    port:'5432'
-})
 
 //all users
 exports.getUsers = async(req,res) =>{
-    const response = await pool.query("SELECT * FROM users")
-    res.status(200).json(response.rows)
+    try{
+        const response = await users.findAll();
+        console.log("response is",response)
+        res.status(200).json(response)
+    }
+    catch (e) {
+        console.error(e);
+        res.status(500).json({
+        message: "Server Error"
+        });
+        }
+
 }
 
 //add user (admin only)
@@ -21,8 +25,13 @@ exports.createUser = async(req,res) =>{
     const {username,email,password,id} = req.body;
     console.log("name",username,"email",email)
     try{
-        const response =await pool.query('INSERT INTO users(username,email,password) VALUES ($1,$2,$3)',[username,email,password])
-        console.log("response is",response)
+        const response= await users.create({
+            user_name:req.body.user_name,
+            password:req.body.password,
+            email:req.body.email,
+            roles:req.body.roles,
+            address:req.body.address
+        })
          res.json({
              message:"user added",
              body:{
@@ -42,7 +51,14 @@ exports.newUser = async(req,res) =>{
     const {username,email,password,id,role,address} = req.body;
     console.log("name",username,"email",email)
     try{
-        const response =await pool.query('INSERT INTO users(username,email,password,role,address) VALUES ($1,$2,$3,$4,$5)',[username,email,password,role,address])
+        const response= await users.create({
+            user_name:req.body.user_name,
+            password:req.body.password,
+            email:req.body.email,
+            roles:req.body.roles,
+            address:req.body.address
+        })
+        // const response =await users.query('INSERT INTO users(username,email,password,role,address) VALUES ($1,$2,$3,$4,$5)',[username,email,password,role,address])
         console.log("response is",response)
          res.json({
              message:"Sign-up successful",
@@ -61,50 +77,50 @@ exports.newUser = async(req,res) =>{
 //get user using ID
 exports.getUserById= async(req,res)=>{
     const id = req.params.id;
-    const response = await pool.query('SELECT * FROM users WHERE user_id = $1',[id]);
-    res.json(response.rows)
+    const response = await users.findOne({ where: { user_id: id } });
+    console.log("response is",response)
+    res.json(response)
 }
 //delete user
 exports.deleteUser= async(req,res)=>{
     const id = req.params.id;
-    const response = await pool.query('DELETE FROM users WHERE user_id = $1',[id]);
+    const response = await users.destroy({ where: { user_id: id } });
     res.json(`User ${id} deleted successful`)
 }
-
+//sign-in
 exports.verifyUser= async(req,res)=>{
-    const email   = req.body.email;
+    const emailbody   = req.body.email;
     const  password  = req.body.password;
     try{
-        let user= await pool.query('SELECT * FROM users WHERE email = $1',[email]);
-        let user_id= await pool.query('SELECT user_id FROM users WHERE email = $1',[email]);
-        let pass_check= await pool.query('SELECT password FROM users WHERE email = $1',[email]);
-        if(pass_check.rows[0].password == password)
+        const user = await users.findOne({ where: { email: emailbody } });
+        const pass_check = await users.findOne({ where: { password: password } });
+        console.log("pass_check",pass_check.password)
+        if(pass_check.password == password)
         {
-        if (!user)                                                              //check user if exists
+            if (!user.user_name)                                                              //check user if exists
                 return res.status(400).json({message: "User Not Exist"});
-        let role = await pool.query('SELECT role FROM users WHERE email = $1',[email])//check role of user
-
-            if(role.rows[0].role == 'admin')
+        
+            if(user.roles == 'admin')                                                   //check role of user
             {
-            var token = jwt.sign({ id: user_id }, `${process.env.JWT_SECRET}`, {
+                var token = jwt.sign({ id: user.user_id }, `${process.env.JWT_SECRET}`, {
                 expiresIn: 86400 // expires in 24 hours
             });
-           res.json({
+            res.json({
             message:"user signed in ,use token",
             body:{
-                user:{email,token}
+                user:{emailbody,token}
             }
-           })
+            })
             }
             else
             {
-            var token = jwt.sign({ id: user_id }, `${process.env.JWT_SECRET2}`, {
+            var token = jwt.sign({ id: user.user_id }, `${process.env.JWT_SECRET2}`, {
                 expiresIn: 86400 // expires in 24 hours
            });
            res.json({
             message:"user signed in ,use token",
             body:{
-                user:{email,token}
+                user:{emailbody,token}
             }
            })
         }
@@ -121,18 +137,27 @@ exports.verifyUser= async(req,res)=>{
 //update user using ID
 exports.updateUser= async(req,res)=>{
     const id = req.params.id;
-    const {name,email,address} = req.body;
-    console.log("address is",address)
-    if(address == undefined && name !== undefined && email !==undefined)
-    {
-    const response = await pool.query('UPDATE users SET username = $1, email = $2 WHERE user_id = $3',[name,email,id]);
-    }
-    else if(address !== undefined && name !== undefined && email !==undefined)
-    {
-     const response = await pool.query('UPDATE users SET username = $1, email = $2 ,address= $4 WHERE user_id = $3',[name,email,id,address]);
-
-    }
-    res.json(`User ${id} updated successful`)
+    const {name,address} = req.body;
+        try{
+            const response = await users.findOne({ where: { user_id: id } });
+            console.log("response is",response)
+                if(name !== undefined)
+                    {
+                        response.user_name = name
+                    }
+                if(address !== undefined)
+                    {
+                        response.address = address
+                    }
+            await response.save();
+            res.json(`User ${id} updated successful`)
+           }
+    catch (e) {
+        console.error(e);
+        res.status(500).json({
+        message: "Server Error"
+        });
+        }
 }
 
 exports.requireSignin = expressJwt({                               //validate JWT based on role
