@@ -4,6 +4,8 @@ const dotenv = require('dotenv');
 dotenv.config()
 const categoryRoutes = require('./routes/categories');
 const productRoutes = require('./routes/product');
+const cartRoutes = require('./routes/cart');
+
 const db = require('./config/database')
 
   
@@ -16,6 +18,6 @@ app.use(express.urlencoded({extended: false}));
 app.use(require('./routes/index'));//user routes
 app.use('/',categoryRoutes);
 app.use('/',productRoutes);
-
+app.use('/',cartRoutes);
 app.listen(4000);
 console.log('server on port 4000')
