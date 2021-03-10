@@ -9,14 +9,11 @@ exports.addCart = async(req,res) => {
     quantity=req.body.quantity;
     user_id=req.body.user_id;
     try{
-        console.log("cart is",cart)
         const response = await users.findOne({ where: { user_id: user_id } });
         const response2 = await product.findOne({ where: { id: product_id } });
-
-        console.log("cart is",response.user_id)
-        console.log("product_name is",response2.product_name)
-        console.log("price is",response2.price)
-
+        const product_name=response2.product_name
+        const user_name=response.user_name
+        const price = response2.price
         const response3= await cart.create({
             product_id:req.body.product_id,
             product_name:response2.product_name,
@@ -28,7 +25,7 @@ exports.addCart = async(req,res) => {
         res.json({
             message:"cart item added",
             body:{
-                cart:{product_id,user_id,quantity}
+                cart:{user_id,user_name,product_id,product_name,quantity,price}
             }
         })
 
@@ -39,4 +36,56 @@ exports.addCart = async(req,res) => {
         message: "Server Error"
         });
         }
+}
+
+//all cart items
+exports.getCartItems = async(req,res) =>{
+    try{
+        const response = await cart.findAll();
+        res.status(200).json(response)
+    }
+    catch (e) {
+        console.error(e);
+        res.status(500).json({
+        message: "Server Error"
+        });
+        }
+
+}
+//get cart item by id
+exports.getCartItemById= async(req,res)=>{
+    const id = req.params.id;
+    const response = await cart.findOne({ where: { id: id } });
+    res.json(response)
+}
+
+//delete cart item by id
+exports.deleteCartItem= async(req,res)=>{
+    const id = req.params.id;
+    console.log("id is",id)
+    const response1 = await cart.findOne({ where: { id: id } });
+    console.log("response1",response1)
+    const response = await cart.destroy({ where: { id: id } });
+    res.json(`Cart ${id} deleted successful`)
+}
+exports.checkout= async(req,res)=>{
+   
+    const response = await users.findOne({ where: { status: true } });
+  
+     const user_id = response.user_id;
+     const response2= await cart.findAll({ where: { user_id: user_id } });
+
+    //  console.log("reponse is",response,user_id)
+     let totalAmount = 0;
+    for(let i = 0 ; i < response2.length; i++)
+    {
+        let quantity = response2[i].quantity
+        let temp = quantity*response2[i].price
+        console.log("quantity is",quantity)
+        console.log("price is",response2[i].price)
+
+        totalAmount = totalAmount + temp
+    }
+    console.log("totalAmount is",totalAmount)
+    
 }

@@ -31,3 +31,17 @@ exports.addProduct = async(req,res) => {
         });
         }
 }
+//all cart items
+exports.getAllProducts = async(req,res) =>{
+    try{
+        const response = await product.findAll();
+        res.status(200).json(response)
+    }
+    catch (e) {
+        console.error(e);
+        res.status(500).json({
+        message: "Server Error"
+        });
+        }
+
+}
