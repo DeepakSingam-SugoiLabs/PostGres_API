@@ -23,7 +23,9 @@ module.exports =  db.define('users',
         address:{
             type: Sequelize.STRING,
         },
-        
+        status:{
+          type:Sequelize.BOOLEAN
+         }
             });
 
 

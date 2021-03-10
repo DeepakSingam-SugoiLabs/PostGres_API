@@ -59,7 +59,8 @@ exports.newUser = async(req,res) =>{
             password:hashedPassword,
             email:req.body.email,
             roles:req.body.roles,
-            address:req.body.address
+            address:req.body.address,
+            status:false
         })
         // const response =await users.query('INSERT INTO users(username,email,password,role,address) VALUES ($1,$2,$3,$4,$5)',[username,email,password,role,address])
         console.log("response is",response)
@@ -90,13 +91,19 @@ exports.deleteUser= async(req,res)=>{
     const response = await users.destroy({ where: { user_id: id } });
     res.json(`User ${id} deleted successful`)
 }
-//sign-in
+//sign in
 exports.verifyUser= async(req,res)=>{
     const emailbody   = req.body.email;
     const  password  = req.body.password;
     try{
         const user = await users.findOne({ where: { email: emailbody } });
         const isMatch = await bcrypt.compare(password, user.password);//ENCRYT password
+        users.findOne({ where: {status: true} }).then(function(project) {
+            console.log("inside query",project)
+            const changestatus= project.update({
+                status:false
+            })      
+        })        
         console.log("ismatch",isMatch)
         if(isMatch)
         {
@@ -108,6 +115,9 @@ exports.verifyUser= async(req,res)=>{
                 var token = jwt.sign({ id: user.user_id }, `${process.env.JWT_SECRET}`, {
                 expiresIn: 86400 // expires in 24 hours
             });
+            const changestatus= user.update({
+                status:true
+            })      
             res.json({
             message:"user signed in ,use token",
             body:{
@@ -120,6 +130,9 @@ exports.verifyUser= async(req,res)=>{
                   var token = jwt.sign({ id: user.user_id }, `${process.env.JWT_SECRET2}`, {
                 expiresIn: 86400 // expires in 24 hours
                     });
+                    const changestatus= user.update({
+                        status:true
+                    })
                   res.json({
                   message:"user signed in ,use token",
                             body:{
