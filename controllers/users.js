@@ -1,4 +1,3 @@
-const {Pool}= require('pg');
 const jwt = require('jsonwebtoken');
 const expressJwt = require('express-jwt');
 const users = require('../models/users')
@@ -150,7 +149,12 @@ exports.updateUser= async(req,res)=>{
                         response.address = address
                     }
             await response.save();
-            res.json(`User ${id} updated successful`)
+            res.json({
+                message:`User ${id} updated successful`,
+                body:{
+                    user:{name,address}
+                }
+            })
            }
     catch (e) {
         console.error(e);

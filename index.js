@@ -13,7 +13,7 @@ db.authenticate().then(()=>console.log('db connected'))
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 //routes
-app.use(require('./routes/index'));
+app.use(require('./routes/index'));//user routes
 app.use('/',categoryRoutes);
 app.use('/',productRoutes);
 
