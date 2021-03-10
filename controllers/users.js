@@ -92,9 +92,8 @@ exports.verifyUser= async(req,res)=>{
     const  password  = req.body.password;
     try{
         const user = await users.findOne({ where: { email: emailbody } });
-        const pass_check = await users.findOne({ where: { password: password } });
         console.log("pass_check",pass_check.password)
-        if(pass_check.password == password)
+        if(user.password == password)
         {
             if (!user.user_name)                                                              //check user if exists
                 return res.status(400).json({message: "User Not Exist"});
