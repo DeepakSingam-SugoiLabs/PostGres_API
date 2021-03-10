@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const expressJwt = require('express-jwt');
 const users = require('../models/users')
+const bcrypt = require('bcrypt');
 
 
 //all users
@@ -49,10 +50,13 @@ exports.createUser = async(req,res) =>{
 exports.newUser = async(req,res) =>{
     const {username,email,password,id,role,address} = req.body;
     console.log("name",username,"email",email)
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);                       //encryt password
+
     try{
         const response= await users.create({
             user_name:req.body.user_name,
-            password:req.body.password,
+            password:hashedPassword,
             email:req.body.email,
             roles:req.body.roles,
             address:req.body.address
@@ -92,8 +96,9 @@ exports.verifyUser= async(req,res)=>{
     const  password  = req.body.password;
     try{
         const user = await users.findOne({ where: { email: emailbody } });
-        console.log("pass_check",pass_check.password)
-        if(user.password == password)
+        const isMatch = await bcrypt.compare(password, user.password);//ENCRYT password
+        console.log("ismatch",isMatch)
+        if(isMatch)
         {
             if (!user.user_name)                                                              //check user if exists
                 return res.status(400).json({message: "User Not Exist"});
@@ -112,17 +117,22 @@ exports.verifyUser= async(req,res)=>{
             }
             else
             {
-            var token = jwt.sign({ id: user.user_id }, `${process.env.JWT_SECRET2}`, {
+                  var token = jwt.sign({ id: user.user_id }, `${process.env.JWT_SECRET2}`, {
                 expiresIn: 86400 // expires in 24 hours
-           });
-           res.json({
-            message:"user signed in ,use token",
-            body:{
-                user:{emailbody,token}
-            }
-           })
-        }
+                    });
+                  res.json({
+                  message:"user signed in ,use token",
+                            body:{
+                                    user:{emailbody,token}
+                                 }
+                          })
+            }   
     }
+    else{
+         res.status(401).json({
+        message: "Incorrect-password"
+        });
+        }
     }
     catch (e) {
         console.error(e);
