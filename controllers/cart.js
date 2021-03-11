@@ -58,7 +58,17 @@ exports.getCartItemById= async(req,res)=>{
     const response = await cart.findOne({ where: { id: id } });
     res.json(response)
 }
-
+//update cart quantity
+exports.ModifyCartItemById= async(req,res)=>{
+    console.log("hi")
+    const id = req.body.id;
+    quantity=req.body.quantity;
+    console.log("id",id,"quantity",quantity)
+    const response = await cart.findOne({ where: { id: id } });
+    response.quantity = quantity
+    response.save();
+    res.json(response)
+}
 //delete cart item by id
 exports.deleteCartItem= async(req,res)=>{
     const id = req.params.id;
