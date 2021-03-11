@@ -68,24 +68,3 @@ exports.deleteCartItem= async(req,res)=>{
     const response = await cart.destroy({ where: { id: id } });
     res.json(`Cart ${id} deleted successful`)
 }
-exports.checkout= async(req,res)=>{
-   
-    const response = await users.findOne({ where: { status: true } });
-  
-     const user_id = response.user_id;
-     const response2= await cart.findAll({ where: { user_id: user_id } });
-
-    //  console.log("reponse is",response,user_id)
-     let totalAmount = 0;
-    for(let i = 0 ; i < response2.length; i++)
-    {
-        let quantity = response2[i].quantity
-        let temp = quantity*response2[i].price
-        console.log("quantity is",quantity)
-        console.log("price is",response2[i].price)
-
-        totalAmount = totalAmount + temp
-    }
-    console.log("totalAmount is",totalAmount)
-    
-}
