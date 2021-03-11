@@ -10,7 +10,7 @@ exports.checkout= async(req,res)=>{
   
         const user_id = response.user_id;
         const response2= await cart.findAll({ where: { user_id: user_id } });
-   
+        
        //  console.log("reponse is",response,user_id)
         let totalAmount = 0;
         let product_name_list = []
@@ -26,13 +26,23 @@ exports.checkout= async(req,res)=>{
            quantity_list[i]=response2[i].quantity
        }
        console.log("totalAmount is",totalAmount,"NAME",response.user_name,"proceedToPay","address",response.address,"placeorder",checkoutuser)
-       console.log('product_name_list',product_name_list)
-       const response3=  checkoutuser.create({
-        total_amount:totalAmount,
-        user_name:response.user_name,
-        proceedToPay:false,
-        address:response.address,
-    })
+       const checkNameexists = await users.findOne({ where: { user_name: response.user_name } });
+       if(checkNameexists){
+        const response4 = await checkoutuser.findOne({ where: { user_name: checkNameexists.user_name } });
+        console.log("respone is",response4)
+        response4.total_amount=totalAmount
+        response4.proceedToPay=false
+        await response4.save();
+       }
+       else{
+        const response3=  checkoutuser.create({
+            total_amount:totalAmount,
+            user_name:response.user_name,
+            proceedToPay:false,
+            address:response.address,
+        })
+       }
+     
     
     const address = response.address;
 
@@ -68,7 +78,14 @@ exports.checkoutPass= async(req,res)=>{
                   message:"Proceeding to payement gateway",
                         
                      })
-           }}   
+           }
+           else{
+            res.json({
+                message:"Transaction declined",
+                      
+                   })
+           }
+        }   
     catch (e) {
         console.error(e);
         res.status(500).json({
