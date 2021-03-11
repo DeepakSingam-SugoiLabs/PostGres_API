@@ -14,6 +14,7 @@ exports.checkout= async(req,res)=>{
        //  console.log("reponse is",response,user_id)
         let totalAmount = 0;
         let product_name_list = []
+        let quantity_list = []
        for(let i = 0 ; i < response2.length; i++)
        {
            let quantity = response2[i].quantity
@@ -22,6 +23,7 @@ exports.checkout= async(req,res)=>{
            totalAmount = totalAmount + temp
            console.log("test is",response2[i].product_name)
            product_name_list[i]=response2[i].product_name
+           quantity_list[i]=response2[i].quantity
        }
        console.log("totalAmount is",totalAmount,"NAME",response.user_name,"proceedToPay","address",response.address,"placeorder",checkoutuser)
        console.log('product_name_list',product_name_list)
@@ -36,9 +38,9 @@ exports.checkout= async(req,res)=>{
 
   const user_name = response.user_name;
     res.json({
-        message:"cart item added,do you want to proceed with payment?",
+        message:"cart item added,do you want to proceed with payment?proceedToPay-true for proceed",
         body:{
-            items:{totalAmount,user_name,address,product_name_list}
+            items:{totalAmount,user_name,address,product_name_list,quantity_list}
         }
     })
     }
@@ -49,4 +51,44 @@ exports.checkout= async(req,res)=>{
         message: "Server Error"
         });
         }
+}
+
+exports.checkoutPass= async(req,res)=>{
+    const {proceedToPay,id} = req.body;
+    console.log("proceedToPay",proceedToPay)
+        try{
+           if(proceedToPay == "true")
+                {
+                    console.log("inside",id)
+                    const response = await checkoutuser.findOne({ where: { id: id } });
+                    console.log("response is",response)
+                    response.proceedToPay = true
+                     await response.save();
+                     res.json({
+                  message:"Proceeding to payement gateway",
+                        
+                     })
+           }}   
+    catch (e) {
+        console.error(e);
+        res.status(500).json({
+        message: "Server Error"
+        });
+        }
+}
+
+
+//all checkout items
+exports.getCheckOutItems = async(req,res) =>{
+    try{
+        const response = await checkoutuser.findAll();
+        res.status(200).json(response)
+    }
+    catch (e) {
+        console.error(e);
+        res.status(500).json({
+        message: "Server Error"
+        });
+        }
+
 }
