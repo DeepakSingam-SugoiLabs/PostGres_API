@@ -7,11 +7,8 @@ exports.checkout= async(req,res)=>{
    
     try{
         const response = await users.findOne({ where: { status: true } });
-  
         const user_id = response.user_id;
         const response2= await cart.findAll({ where: { user_id: user_id } });
-        
-       //  console.log("reponse is",response,user_id)
         let totalAmount = 0;
         let product_name_list = []
         let quantity_list = []
@@ -19,23 +16,22 @@ exports.checkout= async(req,res)=>{
        {
            let quantity = response2[i].quantity
            let temp = quantity*response2[i].price
-           
            totalAmount = totalAmount + temp
            console.log("test is",response2[i].product_name)
            product_name_list[i]=response2[i].product_name
            quantity_list[i]=response2[i].quantity
-       }
+       }            
        console.log("totalAmount is",totalAmount,"NAME",response.user_name,"proceedToPay","address",response.address,"placeorder",checkoutuser)
        const checkNameexists = await users.findOne({ where: { user_name: response.user_name } });
-       if(checkNameexists){
-        const response4 = await checkoutuser.findOne({ where: { user_name: checkNameexists.user_name } });
+       if(checkNameexists){                                                                                 //modify exisisting user cart
+        const response4 = await checkoutuser.findOne({ where: { user_name: checkNameexists.user_name } });      
         console.log("respone is",response4)
         response4.total_amount=totalAmount
         response4.proceedToPay=false
         await response4.save();
        }
        else{
-        const response3=  checkoutuser.create({
+        const response3=  checkoutuser.create({                                                 //create new row for new user
             total_amount:totalAmount,
             user_name:response.user_name,
             proceedToPay:false,
