@@ -1,6 +1,5 @@
 const categories = require('../models/categories')
 var _ = require('lodash');
-
 //add category
 exports.postCategory = async(req,res) => {
 try{
@@ -63,7 +62,6 @@ try{
         });
         }
 }
-
 //getcategoryTree
 exports.categoryTree= async(req,res)=>{    
     const id = req.params.id;
@@ -89,15 +87,11 @@ exports.categoryTree= async(req,res)=>{
           path.subchild=children[i]
           console.log("child",response2[i].name)
           console.log("sub-child",children[i])
-          console.log(" path isssss",path)
+          console.log("path is",path)
           pathlist[i] = _.cloneDeep(path);
     }
-    console.log("children",children)
-    console.log("rootname",rootname)
     console.log("pathlist001",pathlist)
-
     res.json(pathlist)
-
 }
 //return child elements of a category
 async function bringrootvalue(id) {
@@ -120,7 +114,6 @@ exports.deleteCategory= async(req,res)=>{
     const response = await categories.destroy({ where: { id: id } });
     res.json(`Category ${id} deleted successful`)
 }
-
 //update parent_id or category_name
 exports.updateCategory= async(req,res)=>{
     const id = req.params.id;
@@ -144,7 +137,7 @@ exports.updateCategory= async(req,res)=>{
                 }
             })
            }
-    catch (e) {
+        catch (e) {
         console.error(e);
         res.status(500).json({
         message: "Server Error"

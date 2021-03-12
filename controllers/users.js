@@ -2,8 +2,6 @@ const jwt = require('jsonwebtoken');
 const expressJwt = require('express-jwt');
 const users = require('../models/users')
 const bcrypt = require('bcrypt');
-
-
 //all users
 exports.getUsers = async(req,res) =>{
     try{
@@ -19,11 +17,9 @@ exports.getUsers = async(req,res) =>{
         }
 
 }
-
 //add user (admin only)
 exports.createUser = async(req,res) =>{
-    const {username,email,password,id} = req.body;
-    console.log("name",username,"email",email)
+    const {username,email} = req.body;
     try{
         const response= await users.create({
             user_name:req.body.user_name,
@@ -52,7 +48,6 @@ exports.newUser = async(req,res) =>{
     console.log("name",username,"email",email)
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);                       //encryt password
-
     try{
         const response= await users.create({
             user_name:req.body.user_name,
@@ -62,7 +57,6 @@ exports.newUser = async(req,res) =>{
             address:req.body.address,
             status:false
         })
-        // const response =await users.query('INSERT INTO users(username,email,password,role,address) VALUES ($1,$2,$3,$4,$5)',[username,email,password,role,address])
         console.log("response is",response)
          res.json({
              message:"Sign-up successful",
@@ -105,7 +99,7 @@ exports.verifyUser= async(req,res)=>{
             })      
         })        
         console.log("ismatch",isMatch)
-        if(isMatch)
+        if(isMatch)                                                                            //checks if password match
         {
             if (!user.user_name)                                                              //check user if exists
                 return res.status(400).json({message: "User Not Exist"});
@@ -125,7 +119,7 @@ exports.verifyUser= async(req,res)=>{
             }
             })
             }
-            else
+            else                                                                            //jwt for no-admin
             {
                   var token = jwt.sign({ id: user.user_id }, `${process.env.JWT_SECRET2}`, {
                 expiresIn: 86400 // expires in 24 hours
@@ -141,7 +135,7 @@ exports.verifyUser= async(req,res)=>{
                           })
             }   
     }
-    else{
+    else{                                                                   //password does not match
          res.status(401).json({
         message: "Incorrect-password"
         });
@@ -154,7 +148,6 @@ exports.verifyUser= async(req,res)=>{
         });
         }
 }
-
 //update user using ID
 exports.updateUser= async(req,res)=>{
     const id = req.params.id;
@@ -185,7 +178,7 @@ exports.updateUser= async(req,res)=>{
         });
         }
 }
-
+//validate sign in
 exports.requireSignin = expressJwt({                               //validate JWT based on role
     secret: process.env.JWT_SECRET
 });

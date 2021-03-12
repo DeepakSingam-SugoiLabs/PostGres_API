@@ -1,5 +1,4 @@
 const product = require('../models/product')
-
 //add products
 exports.addProduct = async(req,res) => {
     product_name=req.body.product_name;
@@ -13,16 +12,13 @@ exports.addProduct = async(req,res) => {
             seller_details:req.body.seller_details,
             comments_posted:req.body.comments_posted,
             quantity:req.body.quantity
-            
         })
-
         res.json({
             message:"Product added",
             body:{
                 product:{product_name,specifications,seller_details}
             }
         })
-
     }
     catch (e) {
         console.error(e);
@@ -43,7 +39,6 @@ exports.getAllProducts = async(req,res) =>{
         message: "Server Error"
         });
         }
-
 }
 //delete product
 exports.deleteProduct= async(req,res)=>{
@@ -51,14 +46,12 @@ exports.deleteProduct= async(req,res)=>{
     const response = await product.destroy({ where: { id: id } });
     res.json(`Product ${id} deleted successful`)
 }
-
 //update product data
 exports.updateProduct= async(req,res)=>{
     const id = req.params.id;
     const {specifications,seller_details,price,quantity,comments_posted} = req.body;
         try{
             const response = await product.findOne({ where: { id: id } });
-            console.log("response is",response)
                 if(specifications !== undefined)
                     {
                         response.specifications = specifications
@@ -98,6 +91,5 @@ exports.updateProduct= async(req,res)=>{
 exports.getProuctById= async(req,res)=>{
     const id = req.params.id;
     const response = await product.findOne({ where: { id: id } });
-    console.log("response is",response)
     res.json(response)
 }

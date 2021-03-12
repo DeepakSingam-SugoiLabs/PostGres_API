@@ -2,17 +2,16 @@ const cart = require('../models/cart')
 const users = require('../models/users')
 const product = require('../models/product')
 const checkoutuser = require('../models/shoporder')
-
+//checkout for all selected items from cart
 exports.checkout= async(req,res)=>{
-   
     try{
-        const response = await users.findOne({ where: { status: true } });
+        const response = await users.findOne({ where: { status: true } });          //user which is active
         const user_id = response.user_id;
         const response2= await cart.findAll({ where: { user_id: user_id } });
         let totalAmount = 0;
         let product_name_list = []
         let quantity_list = []
-       for(let i = 0 ; i < response2.length; i++)
+       for(let i = 0 ; i < response2.length; i++)                                   //compute total amount,quantity list,product_name_list
        {
            let quantity = response2[i].quantity
            let temp = quantity*response2[i].price
@@ -38,11 +37,8 @@ exports.checkout= async(req,res)=>{
             address:response.address,
         })
        }
-     
-    
-    const address = response.address;
-
-  const user_name = response.user_name;
+    const address = response.address;                                       //address and user_name of active user
+    const user_name = response.user_name;
     res.json({
         message:"cart item added,do you want to proceed with payment?proceedToPay-true for proceed",
         body:{
@@ -50,7 +46,6 @@ exports.checkout= async(req,res)=>{
         }
     })
     }
-    
     catch (e) {
         console.error(e);
         res.status(500).json({
@@ -58,7 +53,7 @@ exports.checkout= async(req,res)=>{
         });
         }
 }
-
+//Confirm the checkout list
 exports.checkoutPass= async(req,res)=>{
     const {proceedToPay,id} = req.body;
     console.log("proceedToPay",proceedToPay)
@@ -71,14 +66,12 @@ exports.checkoutPass= async(req,res)=>{
                     response.proceedToPay = true
                      await response.save();
                      res.json({
-                  message:"Proceeding to payement gateway",
-                        
+                               message:"Proceeding to payement gateway"
                      })
            }
            else{
             res.json({
-                message:"Transaction declined",
-                      
+                message:"Transaction declined"
                    })
            }
         }   
@@ -89,8 +82,6 @@ exports.checkoutPass= async(req,res)=>{
         });
         }
 }
-
-
 //all checkout items
 exports.getCheckOutItems = async(req,res) =>{
     try{

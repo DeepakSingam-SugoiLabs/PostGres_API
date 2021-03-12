@@ -1,8 +1,6 @@
 const cart = require('../models/cart')
 const users = require('../models/users')
 const product = require('../models/product')
-
-
 //add cart
 exports.addCart = async(req,res) => {
     product_id=req.body.product_id;
@@ -37,7 +35,6 @@ exports.addCart = async(req,res) => {
         });
         }
 }
-
 //all cart items
 exports.getCartItems = async(req,res) =>{
     try{
@@ -60,7 +57,6 @@ exports.getCartItemById= async(req,res)=>{
 }
 //update cart quantity
 exports.ModifyCartItemById= async(req,res)=>{
-    console.log("hi")
     const id = req.body.id;
     quantity=req.body.quantity;
     console.log("id",id,"quantity",quantity)
@@ -72,9 +68,6 @@ exports.ModifyCartItemById= async(req,res)=>{
 //delete cart item by id
 exports.deleteCartItem= async(req,res)=>{
     const id = req.params.id;
-    console.log("id is",id)
-    const response1 = await cart.findOne({ where: { id: id } });
-    console.log("response1",response1)
     const response = await cart.destroy({ where: { id: id } });
     res.json(`Cart ${id} deleted successful`)
 }
