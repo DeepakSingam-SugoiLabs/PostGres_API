@@ -1,10 +1,17 @@
 const {Router} = require('express');
 const router = Router();
-const { postCategory,postsubCategory } = require('../controllers/categories')
+const { postCategory,postsubCategory,getAllCategories,categoryTree,deleteCategory,updateCategory } = require('../controllers/categories')
 const { requireSignin } = require('../controllers/users')
 //add category
-router.post('/addcategory',requireSignin,postCategory);
+router.post('/addcategory',postCategory);
+//view all category
+router.get('/allCategories',getAllCategories);
 //add sub-category
-router.post('/addsubcategory',requireSignin,postsubCategory);
-
+router.post('/addsubcategory',postsubCategory);
+//get categoryTree
+router.get('/categoryTree/:id',categoryTree);
+//delete category
+router.delete('/deleteCategory/:id',deleteCategory);
+//update category
+router.put('/updateCategory/:id',updateCategory);
 module.exports = router;

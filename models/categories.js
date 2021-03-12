@@ -1,19 +1,14 @@
 const Sequelize = require('sequelize');
 const db = require('../config/database');
 
-module.exports= db.define('categories',
+module.exports= db.define('category_products',
 {
-     category_name:{
-     type:Sequelize.STRING
-     },
-     category_id: {
-     allowNull: false,
-     autoIncrement: true,
-     primaryKey: true,
-     type: Sequelize.INTEGER,
-     },
-     status:{
-     type:Sequelize.BOOLEAN
-    }
+    name:{
+        type:Sequelize.STRING,
+        allowNull: false
+       },
+       parent_id:{
+           type: Sequelize.INTEGER,
+       }
 }
 )
