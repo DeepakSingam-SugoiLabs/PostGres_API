@@ -94,4 +94,10 @@ exports.updateProduct= async(req,res)=>{
         });
         }
 }
-
+//get product using ID
+exports.getProuctById= async(req,res)=>{
+    const id = req.params.id;
+    const response = await product.findOne({ where: { id: id } });
+    console.log("response is",response)
+    res.json(response)
+}

@@ -1,6 +1,6 @@
 const {Router} = require('express');
 const router = Router();
-const { checkout,checkoutPass,getCheckOutItems } = require('../controllers/placeorder')
+const { checkout,checkoutPass,getCheckOutItems } = require('../controllers/shoporder')
 const { requireSignin } = require('../controllers/users')
 
 
