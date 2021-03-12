@@ -6,6 +6,7 @@ const categoryRoutes = require('./routes/categories');
 const productRoutes = require('./routes/product');
 const cartRoutes = require('./routes/cart');
 const orderRoutes = require('./routes/placeorder');
+const userRoutes = require('./routes/user');
 
 const db = require('./config/database')
 
@@ -16,7 +17,8 @@ db.authenticate().then(()=>console.log('db connected'))
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 //routes
-app.use(require('./routes/index'));//user routes
+// app.use(require('./routes/index'));//user routes userRoutes
+app.use('/',userRoutes);
 app.use('/',categoryRoutes);
 app.use('/',productRoutes);
 app.use('/',cartRoutes);
