@@ -21,8 +21,5 @@ module.exports= db.define('products',
     },
     quantity:{
         type: Sequelize.INTEGER,
-    },
-    sub_category_id:{
-        type: Sequelize.INTEGER,
     }
 })
