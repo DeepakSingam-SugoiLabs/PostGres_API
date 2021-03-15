@@ -21,5 +21,11 @@ module.exports= db.define('products',
     },
     quantity:{
         type: Sequelize.INTEGER,
-    }
+    },
+    category_list:{
+        type: Sequelize.ARRAY(Sequelize.INTEGER),
+    },
+    category_id:{
+        type: Sequelize.INTEGER,
+    },
 })
