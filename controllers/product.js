@@ -83,7 +83,7 @@ exports.deleteProduct= async(req,res)=>{
 //update product data
 exports.updateProduct= async(req,res)=>{
     const id = req.params.id;
-    const {specifications,seller_details,price,quantity,comments_posted} = req.body;
+    const {specifications,seller_details,price,quantity,comments_posted,category_id} = req.body;
         try{
             const response = await product.findOne({ where: { id: id } });
             const response2 = await inventory.findOne({ where: { product_id: id } });
@@ -109,12 +109,19 @@ exports.updateProduct= async(req,res)=>{
                     if(comments_posted !== undefined)
                     {
                         response.comments_posted = comments_posted
+                    }
+                    if(category_id !== undefined)
+                    {
+                        product.update(
+                            {'category_list': sequelize.fn('array_append', sequelize.col('category_list'), category_id)},
+                            {'where': {'id': id}}
+                           );                    
                     }    
             await response.save();
             res.json({
                 message:`Product ${id} updated successful`,
                 body:{
-                    user:{specifications,seller_details,price,quantity,comments_posted}
+                    user:{specifications,seller_details,price,quantity,comments_posted,category_id}
                 }
             })
            }
@@ -154,31 +161,6 @@ exports.getProuctByCategoryID= async(req,res)=>{
         console.error(e);
         res.status(500).json({
         message: "Product by category not found"
-        });
-        }
-}
-
-
-//Add category to product
-exports.addCategoryById= async(req,res)=>{
-    try{
-    const id = req.body.id;
-    const category_id = req.body.category_id;
-    console.log("id",id,"category_id",category_id)
-    // const response = await product.findOne({ where: { id: id } });
-    product.update(
-        {'category_list': sequelize.fn('array_append', sequelize.col('category_list'), category_id)},
-        {'where': {'id': id}}
-       );
-       
-       res.status(200).json({
-        message: `Product ${id} updated`
-        });
-        }    
-    catch (e) {
-        console.error(e);
-        res.status(500).json({
-        message: "Product not found"
         });
         }
 }

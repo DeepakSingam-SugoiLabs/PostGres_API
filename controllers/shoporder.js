@@ -2,6 +2,7 @@ const cart = require('../models/cart')
 const users = require('../models/users')
 const product = require('../models/product')
 const checkoutuser = require('../models/shoporder')
+const order_details = require('../models/order_details')
 var _ = require('lodash');
 const inventory = require('../models/inventory');
 
@@ -15,8 +16,6 @@ exports.checkout= async(req,res)=>{
         if(response2.length>0)
         {
         let totalAmount = 0;
-        let product_name_list = []
-        let quantity_list = []
         let order_number = 1000
         let product_list= {
             product_id:'',
@@ -42,6 +41,8 @@ exports.checkout= async(req,res)=>{
         } 
         today = dd+'-'+mm+'-'+yyyy;
         shipping_date = dd2+'-'+mm+'-'+yyyy;
+        const bill_date = today
+        const delivery_date = shipping_date;
         let product_arr = [];
         for(let i = 0 ; i < response2.length; i++)                                   //compute total amount,quantity list,product_name_list
         {
@@ -68,22 +69,22 @@ exports.checkout= async(req,res)=>{
                 proceedToPay:false,
                 address:response.address,
                 order_number:order_number,
-                user_id:user_id
+                user_id:user_id,
+                bill_date:bill_date,
+                shipping_date:delivery_date
                 })
             order_number++;                                                                        //generate a unique order number
              }
         const address = response.address;                                       //address and user_name of active user
         const user_name = response.user_name;
         const all_products= product_arr;   
-        const bill_date = today
-        const delivery_date = shipping_date;
-        const proceedToPay = checkNameexists.proceedToPay
+       
         const phone_number = response.phone_number
         const zipcode = response.zipcode
         res.json({
                     message:"cart items added,do you want to proceed with payment?proceedToPay-true for proceed",
                     order_details:{
-                    items:{totalAmount,user_id,user_name,phone_number,zipcode,address,order_number,all_products,bill_date,delivery_date,proceedToPay}
+                    items:{totalAmount,user_id,user_name,phone_number,zipcode,address,order_number,all_products,bill_date,delivery_date}
                  }
             })
       }
@@ -106,6 +107,8 @@ exports.checkoutPass= async(req,res)=>
     const {proceedToPay,id} = req.body;                                             
     let product_id_list =[]
     let quantity_list=[]
+    let product_name_list = []
+    let product_price_list = []
     const response = await checkoutuser.findOne({ where: { id: id } });                 //order exists in order_details
     const user_id = response.user_id
         try{
@@ -113,10 +116,12 @@ exports.checkoutPass= async(req,res)=>
                 {
                     const response3 = await cart.findAll({ where: { user_id: user_id } });
                     for(let i=0; i < response3.length;i++)
-                    {
-                        product_id_list[i] = response3[i].product_id                //store all the product_ids
-                        quantity_list[i] = response3[i].quantity                    //store the quantity purchased by user
+                    {   product_id_list.push(response3[i].product_id)
+                        quantity_list.push(response3[i].quantity)
+                        product_name_list.push(response3[i].product_name)
+                        product_price_list.push(response3[i].price)                    //store the quantity purchased by user
                     }
+                    
                     let temp1,temp2;
                     for(i=0;i<product_id_list.length;i++)                                   //loop for n no.of product_ids
                     {   temp1 = product_id_list[i]
@@ -125,10 +130,25 @@ exports.checkoutPass= async(req,res)=>
                         temp2 = response6.quantity - quantity_list[i]
                         let temp3 = response7.quantity - quantity_list[i]
                         inventory.update({quantity: temp2}, {where:{product_id:temp1} })    //update quantity in inventory
-                        product.update({quantity: temp3}, {where:{id:temp1} })              //update product in inventory
+                        product.update({quantity: temp3}, {where:{id:temp1} })              //update quantity in product
                     }
                      const response5 = await cart.destroy({ where: { user_id: user_id } }); //remove all orders by the user
                      response.proceedToPay = true
+                     const active_user = await users.findOne({where:{user_id:user_id}})
+                      const create_order_detaisl = await order_details.create({
+                        order_id:id,
+                        user_id:active_user.user_id,
+                        user_name:active_user.user_name,
+                        total_amount:response.total_amount,
+                        phone_number:active_user.phone_number,
+                        address:active_user.address,
+                        bill_date:response.bill_date,
+                        shipping_date:response.shipping_date,
+                        product_id:product_id_list,
+                        product_name:product_name_list,
+                        product_price:product_price_list,
+                        quantity:quantity_list
+                    })
                      await response.save();
                      const response2 = await 
                      res.json({
@@ -161,4 +181,51 @@ exports.getCheckOutItems = async(req,res) =>{
         });
         }
 
+}
+//view placed order
+exports.getOrderDetails= async(req,res)=>{
+    try{
+    const response = await order_details.findAll();
+    console.log("response",response[0])
+    let product_temp_list = []
+    let product_temp = {
+        product_id:'',
+        product_name:'',
+        quantity:'',
+        price:''
+    }
+    let i;
+    let product_id_list
+    let quantity_list
+    let product_name_list
+    let product_price_list
+    product_id_list = response[0].product_id
+    quantity_list = response[0].quantity
+    product_name_list = response[0].product_name
+    product_price_list = response[0].product_price
+    for(i=0;i < product_id_list.length;i++)
+    {
+        product_temp.product_id = product_id_list[i]
+        product_temp.product_name = product_name_list[i]
+        product_temp.quantity = quantity_list[i]
+        product_temp.price = product_price_list[i]
+        product_temp_list[i]= _.cloneDeep(product_temp)
+    }
+    res.json({
+        user_name:response[0].user_name,
+        user_id:response[0].user_id,
+        address:response[0].address,
+        order_number:response[0].order_id,
+        total_amount:response[0].total_amount,
+        bill_date:response[0].bill_date,
+        shipping_date:response[0].shipping_date,
+        product_details:product_temp_list,
+     })
+    }
+    catch (e) {
+        console.error(e);
+        res.status(500).json({
+        message: "Product not found"
+        });
+        }
 }

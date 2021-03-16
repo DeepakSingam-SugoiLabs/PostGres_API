@@ -21,5 +21,11 @@ module.exports= db.define('shopOrders',
        },
        user_id:{
         type: Sequelize.INTEGER,
+       },
+       bill_date:{
+        type: Sequelize.STRING,
+       },
+       shipping_date:{
+        type: Sequelize.STRING,
        }
 })
