@@ -2,7 +2,8 @@ const product = require('../models/product')
 const categories = require('../models/categories')
 var _ = require('lodash');
 const { Op } = require('sequelize');
-
+const sequelize = require('sequelize');
+const inventory = require('../models/inventory')
 //add products
 exports.addProduct = async(req,res) => {
     product_name=req.body.product_name;
@@ -36,6 +37,14 @@ exports.addProduct = async(req,res) => {
             category_id:req.body.category_id,
             category_list:categorylist
         })
+        console.log("product_id",response.id)
+        let product_id = response.id;
+        const response2= await inventory.create({
+            product_name:req.body.product_name,
+            price:req.body.price,
+            product_id:product_id,
+            quantity:req.body.quantity            
+        })
         res.json({
             message:"Product added",
             body:{
@@ -67,6 +76,8 @@ exports.getAllProducts = async(req,res) =>{
 exports.deleteProduct= async(req,res)=>{
     const id = req.params.id;
     const response = await product.destroy({ where: { id: id } });
+    const response2 = await inventory.destroy({ where: { product_id: id } });
+
     res.json(`Product ${id} deleted successful`)
 }
 //update product data
@@ -75,6 +86,8 @@ exports.updateProduct= async(req,res)=>{
     const {specifications,seller_details,price,quantity,comments_posted} = req.body;
         try{
             const response = await product.findOne({ where: { id: id } });
+            const response2 = await inventory.findOne({ where: { product_id: id } });
+
                 if(specifications !== undefined)
                     {
                         response.specifications = specifications
@@ -86,10 +99,12 @@ exports.updateProduct= async(req,res)=>{
                 if(price !== undefined)
                     {
                         response.price = price
+                        response2.price = price
                     }
                 if(quantity !== undefined)
                     {
                         response.quantity = quantity
+                        response2.quantity = quantity
                     }        
                     if(comments_posted !== undefined)
                     {
@@ -143,3 +158,27 @@ exports.getProuctByCategoryID= async(req,res)=>{
         }
 }
 
+
+//Add category to product
+exports.addCategoryById= async(req,res)=>{
+    try{
+    const id = req.body.id;
+    const category_id = req.body.category_id;
+    console.log("id",id,"category_id",category_id)
+    // const response = await product.findOne({ where: { id: id } });
+    product.update(
+        {'category_list': sequelize.fn('array_append', sequelize.col('category_list'), category_id)},
+        {'where': {'id': id}}
+       );
+       
+       res.status(200).json({
+        message: `Product ${id} updated`
+        });
+        }    
+    catch (e) {
+        console.error(e);
+        res.status(500).json({
+        message: "Product not found"
+        });
+        }
+}

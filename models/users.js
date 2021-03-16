@@ -25,7 +25,13 @@ module.exports =  db.define('users',
         },
         status:{
           type:Sequelize.BOOLEAN
-         }
+         },
+         zipcode:{
+          type: Sequelize.INTEGER,
+      },
+      phone_number:{
+          type: Sequelize.INTEGER,
+      },
             });
 
 

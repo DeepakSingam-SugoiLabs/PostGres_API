@@ -1,6 +1,6 @@
 const {Router} = require('express');
 const router = Router();
-const { addProduct,getAllProducts,deleteProduct,updateProduct,getProuctById,getProuctByCategoryID } = require('../controllers/product')
+const { addProduct,getAllProducts,deleteProduct,updateProduct,getProuctById,getProuctByCategoryID,addCategoryById } = require('../controllers/product')
 const { requireSignin } = require('../controllers/users')
 //add product
 router.post('/addProduct',requireSignin,addProduct);
@@ -14,5 +14,8 @@ router.put('/updateProduct/:id',requireSignin,updateProduct);
 router.get('/productbyId/:id',requireSignin,getProuctById);
 //get product by id
 router.get('/getProuctByCategoryID/:id',getProuctByCategoryID);
+addCategoryById
+//get product by id
+router.put('/addCategoryById',addCategoryById);
 
 module.exports = router;

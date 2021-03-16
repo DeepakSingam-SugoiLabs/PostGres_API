@@ -15,5 +15,11 @@ module.exports= db.define('shopOrders',
        },
        proceedToPay:{
            type: Sequelize.BOOLEAN,
+       },
+       order_number:{
+        type: Sequelize.INTEGER,
+       },
+       user_id:{
+        type: Sequelize.INTEGER,
        }
 })
