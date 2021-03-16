@@ -37,60 +37,51 @@ exports.checkout= async(req,res)=>{
             mm='0'+mm;
         } 
         today = dd+'-'+mm+'-'+yyyy;
-
         let product_arr = [];
-       for(let i = 0 ; i < response2.length; i++)                                   //compute total amount,quantity list,product_name_list
-       {
-           let quantity = response2[i].quantity
-           let temp = quantity*response2[i].price
-           totalAmount = totalAmount + temp
-           product_list.product_id= response2[i].product_id               
-           product_list.product_name=response2[i].product_name
-           product_list.price= response2[i].price                 
-           product_list.quantity=response2[i].quantity
-           product_arr[i] = _.cloneDeep(product_list);
-
-        //    console.log("test is",response2[i].product_name)
-        //    product_name_list[i]=response2[i].product_name
-        //    quantity_list[i]=response2[i].quantity
-       }            
-    //    console.log("totalAmount is",totalAmount,"NAME",response.user_name,"proceedToPay","address",response.address,"placeorder",checkoutuser)
+        for(let i = 0 ; i < response2.length; i++)                                   //compute total amount,quantity list,product_name_list
+        {
+                 let quantity = response2[i].quantity
+                 let temp = quantity*response2[i].price
+                 totalAmount = totalAmount + temp
+                 product_list.product_id= response2[i].product_id               
+                 product_list.product_name=response2[i].product_name
+                 product_list.price= response2[i].price                 
+                 product_list.quantity=response2[i].quantity
+                 product_arr[i] = _.cloneDeep(product_list);
+        }            
        const checkNameexists = await checkoutuser.findOne({ where: { user_name: response.user_name } });
-
        if(checkNameexists !== null){                                                                                 //modify exisisting user cart
         const response4 = await checkoutuser.findOne({ where: { user_name: checkNameexists.user_name } });      
         response4.total_amount=totalAmount
         response4.proceedToPay=false
         await response4.save();
        }
-       else{
-        const response3=  checkoutuser.create({                                                 //create new row for new user
-            total_amount:totalAmount,
-            user_name:response.user_name,
-            proceedToPay:false,
-            address:response.address,
-            order_number:order_number,
-            user_id:user_id
-        })
-        order_number++;
-       }
-    const address = response.address;                                       //address and user_name of active user
-    const user_name = response.user_name;
-    const all_products= product_arr;   
-    const delivery_date = today;
-    const proceedToPay = checkNameexists.proceedToPay
-    const phone_number = response.phone_number
-    const zipcode = response.zipcode
-    console.log("response is ",response)
-    console.log("zip code",zipcode,"ph_no",phone_number)
-    res.json({
-        message:"cart items added,do you want to proceed with payment?proceedToPay-true for proceed",
-        order_details:{
-            items:{totalAmount,user_id,user_name,phone_number,zipcode,address,order_number,all_products,delivery_date,proceedToPay}
-        }
-    })
-    }
-    catch (e) {
+         else{
+                const response3=  checkoutuser.create({                                                 //create new row for new user
+                total_amount:totalAmount,
+                user_name:response.user_name,
+                proceedToPay:false,
+                address:response.address,
+                order_number:order_number,
+                user_id:user_id
+                })
+            order_number++;                                                                        //generate a unique order number
+             }
+        const address = response.address;                                       //address and user_name of active user
+        const user_name = response.user_name;
+        const all_products= product_arr;   
+        const delivery_date = today;
+        const proceedToPay = checkNameexists.proceedToPay
+        const phone_number = response.phone_number
+        const zipcode = response.zipcode
+        res.json({
+                    message:"cart items added,do you want to proceed with payment?proceedToPay-true for proceed",
+                    order_details:{
+                    items:{totalAmount,user_id,user_name,phone_number,zipcode,address,order_number,all_products,delivery_date,proceedToPay}
+                 }
+            })
+     }
+      catch (e) {
         console.error(e);
         res.status(500).json({
         message: "Server Error"
@@ -98,11 +89,12 @@ exports.checkout= async(req,res)=>{
         }
 }
 //Confirm the checkout list
-exports.checkoutPass= async(req,res)=>{
-    const {proceedToPay,id} = req.body;
+exports.checkoutPass= async(req,res)=>
+{
+    const {proceedToPay,id} = req.body;                                             
     let product_id_list =[]
     let quantity_list=[]
-    const response = await checkoutuser.findOne({ where: { id: id } });
+    const response = await checkoutuser.findOne({ where: { id: id } });                 //order exists in order_details
     const user_id = response.user_id
         try{
            if(proceedToPay == "true" && response.id !== undefined)
@@ -110,45 +102,20 @@ exports.checkoutPass= async(req,res)=>{
                     const response3 = await cart.findAll({ where: { user_id: user_id } });
                     for(let i=0; i < response3.length;i++)
                     {
-                        product_id_list[i] = response3[i].product_id
-                        quantity_list[i] = response3[i].quantity
+                        product_id_list[i] = response3[i].product_id                //store all the product_ids
+                        quantity_list[i] = response3[i].quantity                    //store the quantity purchased by user
                     }
-                    const response4 = await inventory.findAll()
-                    let counter = 0;
                     let temp1,temp2;
-                    // for(let i =0 ; i <=response4.length;i++)                                //loop through inventory items
-                    // {   
-                    //     for(let j = 0 ; j <= product_id_list.length;j++ )                   //loop through product_list    
-                    //     { 
-                    //         console.log("response4[i].product_id",response4[i].product_id)
-                    //         if(response4[i].product_id == product_id_list[j])
-                    //         {
-                    //             // response4[j].quantity= response4[j].quantity-quantity_list[counter]
-                    //             temp1=response4[i].product_id
-                    //             temp2=response4[j].quantity - quantity_list[j]
-                    //             inventory.update(
-                    //                 {quantity: temp2},
-                    //                 {where:{product_id:temp1} })
-                    //         }
-                        
-                    //     }
-                     
-                    // }
-                    for(i=0;i<product_id_list.length;i++)
+                    for(i=0;i<product_id_list.length;i++)                                   //loop for n no.of product_ids
                     {   temp1 = product_id_list[i]
                         const response6 = await inventory.findOne({where:{product_id:temp1}})
                         const response7 = await product.findOne({where:{id:temp1}})
                         temp2 = response6.quantity - quantity_list[i]
                         let temp3 = response7.quantity - quantity_list[i]
-                        inventory.update({quantity: temp2}, {where:{product_id:temp1} })
-                        product.update({quantity: temp3}, {where:{id:temp1} })
+                        inventory.update({quantity: temp2}, {where:{product_id:temp1} })    //update quantity in inventory
+                        product.update({quantity: temp3}, {where:{id:temp1} })              //update product in inventory
                     }
-
-
-
-
-
-                     const response5 = await cart.destroy({ where: { user_id: user_id } });
+                     const response5 = await cart.destroy({ where: { user_id: user_id } }); //remove all orders by the user
                      response.proceedToPay = true
                      await response.save();
                      const response2 = await 
