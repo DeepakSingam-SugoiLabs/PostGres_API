@@ -5,7 +5,7 @@ dotenv.config()
 const categoryRoutes = require('./routes/categories');
 const productRoutes = require('./routes/product');
 const cartRoutes = require('./routes/cart');
-const orderRoutes = require('./routes/placeorder');
+const orderRoutes = require('./routes/shoporder');
 const userRoutes = require('./routes/user');
 const db = require('./config/database')
 db.authenticate().then(()=>console.log('db connected'))
