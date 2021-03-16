@@ -11,6 +11,9 @@ exports.checkout= async(req,res)=>{
         const response = await users.findOne({ where: { status: true } });          //user which is active
         const user_id = response.user_id;
         const response2= await cart.findAll({ where: { user_id: user_id } });
+        console.log("response2",response2.length)
+        if(response2.length>0)
+        {
         let totalAmount = 0;
         let product_name_list = []
         let quantity_list = []
@@ -23,8 +26,9 @@ exports.checkout= async(req,res)=>{
     
         }
         var today = new Date();
+        var shipping_date = new Date();
         var dd = today.getDate();
-        dd= dd+3
+        dd2= dd+3
         var mm = today.getMonth()+1; 
         var yyyy = today.getFullYear();
         if(dd<10) 
@@ -37,6 +41,7 @@ exports.checkout= async(req,res)=>{
             mm='0'+mm;
         } 
         today = dd+'-'+mm+'-'+yyyy;
+        shipping_date = dd2+'-'+mm+'-'+yyyy;
         let product_arr = [];
         for(let i = 0 ; i < response2.length; i++)                                   //compute total amount,quantity list,product_name_list
         {
@@ -70,16 +75,23 @@ exports.checkout= async(req,res)=>{
         const address = response.address;                                       //address and user_name of active user
         const user_name = response.user_name;
         const all_products= product_arr;   
-        const delivery_date = today;
+        const bill_date = today
+        const delivery_date = shipping_date;
         const proceedToPay = checkNameexists.proceedToPay
         const phone_number = response.phone_number
         const zipcode = response.zipcode
         res.json({
                     message:"cart items added,do you want to proceed with payment?proceedToPay-true for proceed",
                     order_details:{
-                    items:{totalAmount,user_id,user_name,phone_number,zipcode,address,order_number,all_products,delivery_date,proceedToPay}
+                    items:{totalAmount,user_id,user_name,phone_number,zipcode,address,order_number,all_products,bill_date,delivery_date,proceedToPay}
                  }
             })
+      }
+      else{
+        res.status(400).json({
+            message: "Add items to cart"
+            });
+      }
      }
       catch (e) {
         console.error(e);
