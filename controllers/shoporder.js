@@ -3,6 +3,7 @@ const users = require('../models/users')
 const product = require('../models/product')
 const checkoutuser = require('../models/shoporder')
 var _ = require('lodash');
+const inventory = require('../models/inventory');
 
 //checkout for all selected items from cart
 exports.checkout= async(req,res)=>{
@@ -99,15 +100,56 @@ exports.checkout= async(req,res)=>{
 //Confirm the checkout list
 exports.checkoutPass= async(req,res)=>{
     const {proceedToPay,id} = req.body;
+    let product_id_list =[]
+    let quantity_list=[]
     const response = await checkoutuser.findOne({ where: { id: id } });
-    console.log("proceedToPay",proceedToPay)
-    console.log("response is",response.user_id)
-   const user_id = response.user_id
+    const user_id = response.user_id
         try{
            if(proceedToPay == "true" && response.id !== undefined)
                 {
-                    const response3 = await cart.destroy({ where: { user_id: user_id } });
-                    response.proceedToPay = true
+                    const response3 = await cart.findAll({ where: { user_id: user_id } });
+                    for(let i=0; i < response3.length;i++)
+                    {
+                        product_id_list[i] = response3[i].product_id
+                        quantity_list[i] = response3[i].quantity
+                    }
+                    const response4 = await inventory.findAll()
+                    let counter = 0;
+                    let temp1,temp2;
+                    // for(let i =0 ; i <=response4.length;i++)                                //loop through inventory items
+                    // {   
+                    //     for(let j = 0 ; j <= product_id_list.length;j++ )                   //loop through product_list    
+                    //     { 
+                    //         console.log("response4[i].product_id",response4[i].product_id)
+                    //         if(response4[i].product_id == product_id_list[j])
+                    //         {
+                    //             // response4[j].quantity= response4[j].quantity-quantity_list[counter]
+                    //             temp1=response4[i].product_id
+                    //             temp2=response4[j].quantity - quantity_list[j]
+                    //             inventory.update(
+                    //                 {quantity: temp2},
+                    //                 {where:{product_id:temp1} })
+                    //         }
+                        
+                    //     }
+                     
+                    // }
+                    for(i=0;i<product_id_list.length;i++)
+                    {   temp1 = product_id_list[i]
+                        const response6 = await inventory.findOne({where:{product_id:temp1}})
+                        const response7 = await product.findOne({where:{id:temp1}})
+                        temp2 = response6.quantity - quantity_list[i]
+                        let temp3 = response7.quantity - quantity_list[i]
+                        inventory.update({quantity: temp2}, {where:{product_id:temp1} })
+                        product.update({quantity: temp3}, {where:{id:temp1} })
+                    }
+
+
+
+
+
+                     const response5 = await cart.destroy({ where: { user_id: user_id } });
+                     response.proceedToPay = true
                      await response.save();
                      const response2 = await 
                      res.json({
