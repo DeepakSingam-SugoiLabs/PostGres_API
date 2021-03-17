@@ -11,13 +11,12 @@ exports.checkout= async(req,res)=>{
     try{
         const response = await users.findOne({ where: { status: true } });          //user which is active
         const user_id = response.user_id;
-        const response2= await cart.findAll({ where: { user_id: user_id } });
-        console.log("response2",response2.length)
+        const response2= await cart.findAll({ where: { user_id: user_id } });       //get all cart data
         if(response2.length>0)
         {
         let totalAmount = 0;
         let order_number = 1000
-        let product_list= {
+        let product_list= {                                                         //collect product data in row format
             product_id:'',
             product_name:'',
             price:'',
@@ -39,8 +38,8 @@ exports.checkout= async(req,res)=>{
         {
             mm='0'+mm;
         } 
-        today = dd+'-'+mm+'-'+yyyy;
-        shipping_date = dd2+'-'+mm+'-'+yyyy;
+        today = dd+'-'+mm+'-'+yyyy;                                                 //generate order date
+        shipping_date = dd2+'-'+mm+'-'+yyyy;                                        //generate shipping date
         const bill_date = today
         const delivery_date = shipping_date;
         let product_arr = [];
@@ -116,10 +115,10 @@ exports.checkoutPass= async(req,res)=>
                 {
                     const response3 = await cart.findAll({ where: { user_id: user_id } });
                     for(let i=0; i < response3.length;i++)
-                    {   product_id_list.push(response3[i].product_id)
-                        quantity_list.push(response3[i].quantity)
-                        product_name_list.push(response3[i].product_name)
-                        product_price_list.push(response3[i].price)                    //store the quantity purchased by user
+                    {   product_id_list.push(response3[i].product_id)                  //store the id of product purchased by user
+                        quantity_list.push(response3[i].quantity)                    //store the quantity purchased by user
+                        product_name_list.push(response3[i].product_name)            //store the product_name purchased by user
+                        product_price_list.push(response3[i].price)                    //store the price purchased by user
                     }
                     
                     let temp1,temp2;
@@ -135,7 +134,7 @@ exports.checkoutPass= async(req,res)=>
                      const response5 = await cart.destroy({ where: { user_id: user_id } }); //remove all orders by the user
                      response.proceedToPay = true
                      const active_user = await users.findOne({where:{user_id:user_id}})
-                      const create_order_detaisl = await order_details.create({
+                      const create_order_detaisl = await order_details.create({             //create order details
                         order_id:id,
                         user_id:active_user.user_id,
                         user_name:active_user.user_name,
@@ -203,13 +202,13 @@ exports.getOrderDetails= async(req,res)=>{
     quantity_list = response[0].quantity
     product_name_list = response[0].product_name
     product_price_list = response[0].product_price
-    for(i=0;i < product_id_list.length;i++)
+    for(i=0;i < product_id_list.length;i++)                                        
     {
         product_temp.product_id = product_id_list[i]
         product_temp.product_name = product_name_list[i]
         product_temp.quantity = quantity_list[i]
         product_temp.price = product_price_list[i]
-        product_temp_list[i]= _.cloneDeep(product_temp)
+        product_temp_list[i]= _.cloneDeep(product_temp)                                     //displaying product details in row
     }
     res.json({
         user_name:response[0].user_name,

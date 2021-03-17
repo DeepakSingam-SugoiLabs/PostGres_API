@@ -11,7 +11,6 @@ exports.addProduct = async(req,res) => {
     specifications=req.body.specifications;
     category_id=req.body.category_id;
     try{
-        console.log('category_id',category_id)
         let temp = 0 
         let temp_category_id = category_id
         let categorylist = []
@@ -27,7 +26,7 @@ exports.addProduct = async(req,res) => {
             }
             
         }
-        const response= await product.create({
+        const response= await product.create({                                          //create product
             product_name:req.body.product_name,
             price:req.body.price,
             specifications:req.body.specifications,
@@ -37,7 +36,6 @@ exports.addProduct = async(req,res) => {
             category_id:req.body.category_id,
             category_list:categorylist
         })
-        console.log("product_id",response.id)
         let product_id = response.id;
         const response2= await inventory.create({
             product_name:req.body.product_name,

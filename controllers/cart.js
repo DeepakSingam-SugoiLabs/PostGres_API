@@ -8,10 +8,10 @@ exports.addCart = async(req,res) => {
     product_id=req.body.product_id;
     quantity=req.body.quantity;
     try{
-        const response = await users.findOne({ where: { status: true } });
-        const response2 = await product.findOne({ where: { id: product_id } });
-        const response3 = await inventory.findOne({where:{product_id:product_id}})
-        if(response3.quantity >= quantity)
+        const response = await users.findOne({ where: { status: true } });                      //get user details
+        const response2 = await product.findOne({ where: { id: product_id } });                 //get product details
+        const response3 = await inventory.findOne({where:{product_id:product_id}})              //inventory check
+        if(response3.quantity >= quantity)                                                      //as long as sufficient inventory quantity
        {
         const product_name=response2.product_name
         const user_name=response.user_name
@@ -50,7 +50,7 @@ exports.addCart = async(req,res) => {
 //all cart items
 exports.getCartItems = async(req,res) =>{
     try{
-        const response = await cart.findAll();
+        const response = await cart.findAll();                                              //all cart items
         res.status(200).json(response)
     }
     catch (e) {
@@ -64,7 +64,7 @@ exports.getCartItems = async(req,res) =>{
 //get cart item by id
 exports.getCartItemById= async(req,res)=>{
     const id = req.params.id;
-    const response = await cart.findOne({ where: { id: id } });
+    const response = await cart.findOne({ where: { id: id } });                             //get cart item for an id
     res.json(response)
 }
 //update cart quantity
@@ -73,9 +73,9 @@ exports.ModifyCartItemById= async(req,res)=>{
     quantity=req.body.quantity;
     console.log("id",id,"quantity",quantity)
     try{
-    const response = await cart.findOne({ where: { id: id } });
+    const response = await cart.findOne({ where: { id: id } });                         //get cart item for an id
     const product_id = response.product_id
-    const response3 = await inventory.findOne({where:{product_id:product_id}})
+    const response3 = await inventory.findOne({where:{product_id:product_id}})          //update inventory
     if(response3.quantity >= quantity)
     {
     response.quantity = quantity
@@ -100,7 +100,7 @@ exports.deleteCartItem= async(req,res)=>{
     const id = req.params.id;
     try
     {
-        const response = await cart.destroy({ where: { id: id } });
+        const response = await cart.destroy({ where: { id: id } });                           //remove cart item
         res.json(`Cart ${id} deleted successful`)
     }
     catch (e) {

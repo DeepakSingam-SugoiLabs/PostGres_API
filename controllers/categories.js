@@ -3,7 +3,7 @@ var _ = require('lodash');
 //add category
 exports.postCategory = async(req,res) => {
 try{
-  const response= await categories.create({
+  const response= await categories.create({                                     //create category
         name:req.body.category_name,
         parent_id:0
     })
@@ -24,7 +24,7 @@ try{
 //view all categories
 exports.getAllCategories = async(req,res) =>{
     try{
-        const response = await categories.findAll();
+        const response = await categories.findAll();                        //view all categories
         console.log("response is",response)
         res.status(200).json(response)
     }
@@ -41,13 +41,12 @@ exports.postsubCategory = async(req,res) => {
 let sub_category_name = req.body.sub_category_name
 let parent_id = req.body.parent_id
 try{
-    const response= await categories.create({
+    const response= await categories.create({                               //create a sub-category
         name:sub_category_name,
         parent_id:parent_id
     })
     const response2= await categories.findOne({ where: { id: parent_id } }) //parent category name
     const parent_name = response2.name
-    console.log(response);
       res.json({
              message:"sub-Category added",
              body:{
@@ -65,7 +64,7 @@ try{
 //getcategoryTree
 exports.categoryTree= async(req,res)=>{    
     const id = req.params.id;
-    const response = await categories.findOne({ where: { id: id } });
+    const response = await categories.findOne({ where: { id: id } });               //root_id
     let rootname;
     const children = []
     let pathlist = []
@@ -85,12 +84,8 @@ exports.categoryTree= async(req,res)=>{
           children[i]=await bringrootvalue(sendId)                  //return child category of a sub category
           path.subcategory= sub_category_name[i]                    
           path.subchild=children[i]
-          console.log("child",response2[i].name)
-          console.log("sub-child",children[i])
-          console.log("path is",path)
           pathlist[i] = _.cloneDeep(path);
     }
-    console.log("pathlist001",pathlist)
     res.json(pathlist)
 }
 //return child elements of a category
@@ -102,10 +97,8 @@ async function bringrootvalue(id) {
             for(let i = 0 ; i < response3.length;i++)
             {
                 subname[i]= response3[i].name
-                console.log("response3[i].name",response3[i].name)
             }
         }
-        console.log("subname to return",subname)
         return subname
   }
 //delete Category
@@ -119,8 +112,7 @@ exports.updateCategory= async(req,res)=>{
     const id = req.params.id;
     const {parent_id,name} = req.body;
         try{
-            const response = await categories.findOne({ where: { id: id } });
-            console.log("response is",response)
+            const response = await categories.findOne({ where: { id: id } });           //update for this id
                 if(name !== undefined)
                     {
                         response.name = name

@@ -6,7 +6,6 @@ const bcrypt = require('bcrypt');
 exports.getUsers = async(req,res) =>{
     try{
         const response = await users.findAll();
-        console.log("response is",response)
         res.status(200).json(response)
     }
     catch (e) {
@@ -45,11 +44,10 @@ exports.createUser = async(req,res) =>{
 //sign up
 exports.newUser = async(req,res) =>{
     const {username,email,password,id,role,address} = req.body;
-    console.log("name",username,"email",email)
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);                       //encryt password
     try{
-        const response= await users.create({
+        const response= await users.create({                                        //create user
             user_name:req.body.user_name,
             password:hashedPassword,
             email:req.body.email,
@@ -57,7 +55,6 @@ exports.newUser = async(req,res) =>{
             address:req.body.address,
             status:false
         })
-        console.log("response is",response)
          res.json({
              message:"Sign-up successful",
              body:{
@@ -76,7 +73,6 @@ exports.newUser = async(req,res) =>{
 exports.getUserById= async(req,res)=>{
     const id = req.params.id;
     const response = await users.findOne({ where: { user_id: id } });
-    console.log("response is",response)
     res.json(response)
 }
 //delete user
@@ -93,12 +89,10 @@ exports.verifyUser= async(req,res)=>{
         const user = await users.findOne({ where: { email: emailbody } });
         const isMatch = await bcrypt.compare(password, user.password);//ENCRYT password
         users.findOne({ where: {status: true} }).then(function(project) {
-            console.log("inside query",project)
             const changestatus= project.update({
                 status:false
             })      
         })        
-        console.log("ismatch",isMatch)
         if(isMatch)                                                                            //checks if password match
         {
             if (!user.user_name)                                                              //check user if exists
@@ -153,8 +147,7 @@ exports.updateUser= async(req,res)=>{
     const id = req.params.id;
     const {name,address} = req.body;
         try{
-            const response = await users.findOne({ where: { user_id: id } });
-            console.log("response is",response)
+            const response = await users.findOne({ where: { user_id: id } });           //find user by id
                 if(name !== undefined)
                     {
                         response.user_name = name
