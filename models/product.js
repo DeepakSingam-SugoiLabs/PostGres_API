@@ -28,4 +28,8 @@ module.exports= db.define('products',
     category_id:{
         type: Sequelize.INTEGER,
     },
+    product_image:{
+        data:Buffer,
+        type: Sequelize.STRING
+    }
 })

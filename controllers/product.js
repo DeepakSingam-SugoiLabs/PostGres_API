@@ -4,6 +4,10 @@ var _ = require('lodash');
 const { Op } = require('sequelize');
 const sequelize = require('sequelize');
 const inventory = require('../models/inventory')
+const formiable = require('formidable')
+const fs = require('fs')
+const path = require('path') 
+
 //add products
 exports.addProduct = async(req,res) => {
     product_name=req.body.product_name;
@@ -81,7 +85,7 @@ exports.deleteProduct= async(req,res)=>{
 //update product data
 exports.updateProduct= async(req,res)=>{
     const id = req.params.id;
-    const {specifications,seller_details,price,quantity,comments_posted,category_id} = req.body;
+    const {specifications,seller_details,price,quantity,comments_posted,category_id,product_image} = req.body;
         try{
             const response = await product.findOne({ where: { id: id } });
             const response2 = await inventory.findOne({ where: { product_id: id } });
@@ -161,4 +165,53 @@ exports.getProuctByCategoryID= async(req,res)=>{
         message: "Product by category not found"
         });
         }
+}
+
+exports.uploadImage = async(req,res,next) =>
+{
+    let form = new formiable.IncomingForm();
+    form.keepExtensions = true
+    form.parse(req, async(err,fields,files)=>{
+            if(err)
+            {
+                return res.status(400).json({
+                    error:"Image could not be uploaded"
+                })
+            }
+            
+            let post = new product(fields)
+            console.log("fields are",fields,"req.profile",post)
+            if(files.product_image && fields.id){
+                post.product_image = fs.readFileSync(files.product_image.path)
+
+                post.product_image.contentType = files.product_image.type
+
+                post.product_image.name = files.product_image.name
+
+                let oldPath = files.product_image.path;
+                console.log("oldPatproduct_image",oldPath)
+
+                var newPath = path.join(__dirname, '../uploads') 
+                + '/'+files.product_image.name 
+                console.log("newPath",newPath)
+
+                var rawData = fs.readFileSync(oldPath) 
+                fs.writeFile(newPath, rawData, function(err){ 
+                    if(err) console.log(err) 
+                    return ""
+                }) 
+                console.log("picture is",files.product_image.name)
+            }
+            else{
+                return res.status(400).json({
+                    error:"Image could not be uploaded"
+                })
+            }
+            console.log("post.product_image",post.product_image)
+            let response = await product.findOne({where: {id:fields.id}})
+            response.product_image= files.product_image.name
+            response.save()
+            res.json(response)
+
+        })
 }
