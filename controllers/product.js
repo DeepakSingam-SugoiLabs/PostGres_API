@@ -181,37 +181,28 @@ exports.uploadImage = async(req,res,next) =>
             
             let post = new product(fields)
             console.log("fields are",fields,"req.profile",post)
-            if(files.product_image && fields.id){
+            if(files.product_image && fields.id)                                                //check if id and image exists
+            {
                 post.product_image = fs.readFileSync(files.product_image.path)
-
                 post.product_image.contentType = files.product_image.type
-
                 post.product_image.name = files.product_image.name
-
-                let oldPath = files.product_image.path;
-                console.log("oldPatproduct_image",oldPath)
-
-                var newPath = path.join(__dirname, '../uploads') 
+                let oldPath = files.product_image.path;                                        //fetching the path of file provided 
+                var newPath = path.join(__dirname, '../uploads')                               //assigning new path for uploading file 
                 + '/'+files.product_image.name 
-                console.log("newPath",newPath)
-
-                var rawData = fs.readFileSync(oldPath) 
-                fs.writeFile(newPath, rawData, function(err){ 
+                var rawData = fs.readFileSync(oldPath)                                         //data of old file
+                fs.writeFile(newPath, rawData, function(err){                                  //save file to directory
                     if(err) console.log(err) 
                     return ""
                 }) 
-                console.log("picture is",files.product_image.name)
             }
             else{
                 return res.status(400).json({
                     error:"Image could not be uploaded"
                 })
             }
-            console.log("post.product_image",post.product_image)
             let response = await product.findOne({where: {id:fields.id}})
             response.product_image= files.product_image.name
             response.save()
             res.json(response)
-
         })
 }
